@@ -1,0 +1,555 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+{% block page_title %}{{page_title}}{% endblock page_title %}
+{% block content %}
+
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нақты уақыттағы орынды бақылау</title>
+
+    <!-- leaflet css  -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAmUfCtekuqEB8DJCBRK-XkcEa7OWpXZbU&libraries=places"></script>
+    <script>
+        // Map initialization
+        var map = L.map('map').setView([43.24166581629498, 76.90164790076932], 6);
+
+        //osm layer
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> GoBUS'
+        });
+        osm.addTo(map);
+
+        // Marker for current user's location
+        var userMarker, userCircle;
+
+        // Get current position
+        if (!navigator.geolocation) {
+            console.log("Your browser doesn't support geolocation feature!")
+        } else {
+            setInterval(() => {
+                navigator.geolocation.getCurrentPosition(getPosition)
+            }, 5000);
+        }
+
+        function getPosition(position) {
+            var lat = position.coords.latitude
+            var long = position.coords.longitude
+            var accuracy = position.coords.accuracy
+
+            if (userMarker) {
+                map.removeLayer(userMarker)
+            }
+
+            if (userCircle) {
+                map.removeLayer(userCircle)
+            }
+
+            userMarker = L.marker([lat, long])
+            userCircle = L.circle([lat, long], {
+                radius: accuracy
+            })
+
+            var featureGroup = L.featureGroup([userMarker, userCircle]).addTo(map)
+
+            map.fitBounds(featureGroup.getBounds())
+
+            console.log("Your coordinate is: Lat: " + lat + " Long: " + long + " Accuracy: " + accuracy)
+        }
+
+        // Add bus stops as markers
+        var busStops = [{
+                name: "Bus Stop 1",
+                lat: 43.43046729060574,
+                long: 76.91403548967112,
+                iconUrl: "red.png"
+            },
+            {
+                name: "Bus Stop 2",
+                lat: 14.1060746,
+                long: 100.608406,
+                iconUrl: "blue.png"
+            },
+            {
+                name: "Bus Stop 3",
+                lat: 14.1260746,
+                long: 100.608406,
+                iconUrl: "green.png"
+            }
+        ];
+
+        var markers = [];
+
+        busStops.forEach(function (busStop) {
+            var icon = L.icon({
+                iconUrl: busStop.iconUrl,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+                popupAnchor: [0, -16]
+            });
+
+            var marker = L.marker([busStop.lat, busStop.long], {
+                icon: icon
+            }).bindPopup(busStop.name).addTo(map);
+
+            markers.push(marker);
+        });
+
+        // Add click event listener for markers
+        markers.forEach(function(marker) {
+            marker.on('click', function() {
+                alert('Clicked on marker: ' + marker.getPopup().getContent());
+            });
+        });
+                // Add bus stops as markers
+                var busStops = [{
+                name: "Bus Stop 1",
+                lat: 14.0860746,
+                long: 100.608406,
+                iconUrl: "red.png"
+            },
+            {
+                name: "Bus Stop 2",
+                lat: 14.1060746,
+                long: 100.608406,
+                iconUrl: "blue.png"
+            },
+
+        ];
+
+        var markers = [];
+
+        busStops.forEach(function(busStop) {
+            var icon = L.icon({
+                iconUrl: busStop.iconUrl,
+                iconSize: [32, 32],
+                iconAnchor: [16, 32]
+            });
+
+            var marker = L.marker([busStop.lat, busStop.long], {
+                icon: icon
+            }).bindPopup(busStop.name).addTo(map);
+
+            markers.push(marker);
+        });
+
+        // Add bus routes as polylines
+        var busRoutes = [{
+                name: "І - ауысым",
+                points: [
+                    [43.39678367405259, 76.90941329912435],
+                    [43.39678367405259, 76.90941329912435],
+                    [43.39732856480569, 76.90959654136624],
+                    [43.39742990809394, 76.90924785421241],
+                    [43.397464988423444, 76.90915665911062],
+                    [43.39786646185942, 76.90865776825977],
+                    [43.398166590748716, 76.90862558175326],
+                    [43.39835930248009, 76.90862209823068],
+                    [43.398598191025236, 76.90879059750056],
+                    [43.39899832722837, 76.90901252336819],
+                    [43.39937755837518, 76.90923855898573],
+                    [43.399950879666214, 76.90957966726377],
+                    [43.40026739848499, 76.90976871524151],
+                    [43.40085265531643, 76.91010571378125],
+                    [43.40128902197538, 76.91037560666398],
+                    [43.40210372754933, 76.91081657826071],
+                    [43.402817730192425, 76.91122395204408],
+                    [43.40353782689299, 76.91163132582459],
+                    [43.40571219010996, 76.91287101407175],
+                    [43.40760807238009, 76.91379455177015],
+                    [43.40938079172812, 76.91463336127381],
+                    [43.40906072123043, 76.91520104046049],
+                    [43.40850059381558, 76.91598901297],
+                    [43.40790777607847, 76.91692303168134],
+                    [43.407587508474386, 76.91727974789903],
+                    [43.407115660751145, 76.91762300312737],
+                    [43.40665603351967, 76.91793597115387],
+                    [43.406169509402076, 76.91824893916821],
+                    [43.4058907953404, 76.91835662708299],
+                    [43.405728557614665, 76.9183565560149],
+                    [43.40568282643846, 76.9185873606277],
+                    [43.40569807016775, 76.91880862783579],
+                    [43.405836649351635, 76.91923780995054],
+                    [43.405997400808126, 76.9198272200382],
+                    [43.40627732904872, 76.92089731408863],
+                    [43.40661130115467, 76.92239849773257]
+                ],
+                color: "red"
+            },
+            {
+                name: "II - ауысым",
+                points: [
+                    [43.39678367405259, 76.90941329912435],
+                    [43.39678367405259, 76.90941329912435],
+                    [43.39732856480569, 76.90959654136624],
+                    [43.39742990809394, 76.90924785421241],
+                    [43.397464988423444, 76.90915665911062],
+                    [43.39786646185942, 76.90865776825977],
+                    [43.398166590748716, 76.90862558175326],
+                    [43.39835930248009, 76.90862209823068],
+                    [43.398598191025236, 76.90879059750056],
+                    [43.39899832722837, 76.90901252336819],
+                    [43.39937755837518, 76.90923855898573],
+                    [43.399950879666214, 76.90957966726377],
+                    [43.40026739848499, 76.90976871524151],
+                    [43.40085265531643, 76.91010571378125],
+                    [43.40128902197538, 76.91037560666398],
+                    [43.40210372754933, 76.91081657826071],
+                    [43.402817730192425, 76.91122395204408],
+                    [43.40353782689299, 76.91163132582459],
+                    [43.40571219010996, 76.91287101407175],
+                    [43.40760807238009, 76.91379455177015],
+                    [43.40938079172812, 76.91463336127381],
+                    [43.40906072123043, 76.91520104046049],
+                    [43.40850059381558, 76.91598901297],
+                    [43.40790777607847, 76.91692303168134],
+                    [43.407587508474386, 76.91727974789903],
+                    [43.407115660751145, 76.91762300312737],
+                    [43.40665603351967, 76.91793597115387],
+                    [43.406169509402076, 76.91824893916821],
+                    [43.4058907953404, 76.91835662708299],
+                    [43.405728557614665, 76.9183565560149],
+                    [43.40568282643846, 76.9185873606277],
+                    [43.40569807016775, 76.91880862783579],
+                    [43.405836649351635, 76.91923780995054],
+                    [43.405997400808126, 76.9198272200382],
+                    [43.40627732904872, 76.92089731408863],
+                    [43.40661130115467, 76.92239849773257]
+                ],
+                color: "blue"
+            },
+
+        ];
+
+        busRoutes.forEach(function(busRoute) {
+            var polyline = L.polyline(busRoute.points, {
+                color: busRoute.color
+            }).bindPopup(busRoute.name).addTo(map);
+        });
+    </script>
+</body>
+
+</html>
+
+
+
+
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{total_attendance}}</h3>
+
+                        <p>Жалпы қатысу</p>
+                    </div>
+                    <div class="icon">
+                      <i class="nav-icon fas fa-calendar-alt"></i>
+                    </div>
+                    {# <a href="#" class="small-box-footer">Толық ақпарат <i class="fas fa-arrow-circle-right"></i></a> #}
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>{{ percent_present }}<sup style="font-size: 20px">%</sup></h3>
+
+                        <p>Келгендер пайызы</p>
+                    </div>
+                    <div class="icon">
+                      <i class="nav-icon fas fa-calendar-check"></i>
+                    </div>
+                    {# <a href="#" class="small-box-footer">Толық ақпарат <i class="fas fa-arrow-circle-right"></i></a> #}
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>{{percent_absent}}<sup style="font-size: 20px">%</sup></h3>
+
+                        <p>Келмегендер пайызы</p>
+                    </div>
+                    <div class="icon">
+                      <i class="nav-icon fas fa-calendar-minus"></i>
+                    </div>
+                    {# <a href="#" class="small-box-footer">Толық ақпарат <i class="fas fa-arrow-circle-right"></i></a> #}
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3>{{total_subject}}</h3>
+
+                        <p>Жалпы аялдамалар</p>
+                    </div>
+                    <div class="icon">
+                      <i class="nav-icon fas fa-book"></i>
+                    </div>
+                    {# <a href="#" class="small-box-footer">Толық ақпарат <i class="fas fa-arrow-circle-right"></i></a> #}
+                </div>
+            </div>
+            <!-- ./col -->
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+           
+                        <!-- DONUT CHART -->
+                        <div class="card card-secondary">
+                          <div class="card-header">
+                            <h3 class="card-title">{{page_title}}</h3>
+            
+                            <div class="card-tools">
+                              <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
+                              </button>
+                              <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+                            </div>
+                          </div>
+                          <div class="card-body">
+                            <canvas id="attendanceData" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                          </div>
+                          <!-- /.card-body -->
+                        </div>
+                        <!-- /.card -->
+            </div>
+                  
+            <div class="col-lg-6">
+            
+                        <div class="card card-secondary">
+                          <div class="card-header">
+                            <h3 class="card-title">{{page_title}}</h3>
+            
+                            <div class="card-tools">
+                              <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
+                              </button>
+                              <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+                            </div>
+                          </div>
+                          <div class="card-body">
+                            <div class="chart">
+                              <canvas id="attendanceStatistics" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                          <!-- /.card-body -->
+                        <!-- /.card -->
+                        </div> 
+                        </div>
+                        </div>
+                        </div>
+                        </div>
+                        </div>  
+                        </section>
+{% endblock content %}
+
+
+
+
+
+
+
+
+
+
+{% block custom_js %}
+  <script>
+$(document).ready(function(){
+
+    //Dataset
+    var subjects = {{data_name|safe}}
+    var data_present = {{data_present}}
+    var data_absent = {{data_absent}}
+
+    //-------------
+    //- DONUT CHART -
+    var attendanceDataCanvas = $('#attendanceData').get(0).getContext('2d')
+    var donutData        = {
+      labels: [
+         'Present', 'Absent'
+      ],
+      datasets: [
+        {
+          data: [{{percent_present}}, {{percent_absent}}],
+          backgroundColor : ['#00a65a','#f56954'],
+        }
+      ]
+    }
+    var donutOptions     = {
+      maintainAspectRatio : false,
+      responsive : true,
+    }
+    var attendanceData = new Chart(attendanceDataCanvas, {
+      type: 'doughnut',
+      data: donutData,
+      options: donutOptions      
+    });
+
+    //attendanceStatistics
+//Bar Chart
+var areaChartData = {
+    labels  : subjects,
+    datasets: [
+    {
+        label               : 'Present In Class',
+        backgroundColor     : 'rgba(60,141,188,0.9)',
+        borderColor         : 'rgba(60,141,188,0.8)',
+        pointRadius          : false,
+        pointColor          : '#3b8bba',
+        pointStrokeColor    : 'rgba(60,141,188,1)',
+        pointHighlightFill  : '#fff',
+        pointHighlightStroke: 'rgba(60,141,188,1)',
+        data                : data_present
+      },
+
+      {
+        label               : 'Absent In Class',
+        backgroundColor     : 'rgba(210, 214, 222, 1)',
+        borderColor         : 'rgba(210, 214, 222, 1)',
+        pointRadius         : false,
+        pointColor          : 'rgba(210, 214, 222, 1)',
+        pointStrokeColor    : '#c1c7d1',
+        pointHighlightFill  : '#fff',
+        pointHighlightStroke: 'rgba(220,220,220,1)',
+        data                : data_absent
+      },
+    ]
+  }
+var barChartCanvas = $('#attendanceStatistics').get(0).getContext('2d')
+var barChartData = jQuery.extend(true, {}, areaChartData)
+var temp = areaChartData.datasets[0]
+barChartData.datasets[0] = temp
+var barChartOptions = {
+  responsive              : true,
+  maintainAspectRatio     : false,
+  datasetFill             : false
+}
+
+var barChart = new Chart(barChartCanvas, {
+  type: 'bar', 
+  data: barChartData,
+  options: barChartOptions
+})
+
+ 
+})
+
+
+  </script>
+
+        <!-- The core Firebase JS SDK is always required and must be listed first -->
+        <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-app.js"></script>
+
+        <!-- TODO: Add SDKs for Firebase products that you want to use
+         https://firebase.google.com/docs/web/setup#available-libraries -->
+        <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-analytics.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.22.1/firebase-messaging.js"></script>
+    
+    
+        <script>
+            // Your web app's Firebase configuration
+            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            var firebaseConfig = {
+                apiKey: "AIzaSyBarDWWHTfTMSrtc5Lj3Cdw5dEvjAkFwtM",
+                authDomain: "sms-with-django.firebaseapp.com",
+                databaseURL: "https://sms-with-django.firebaseio.com",
+                projectId: "sms-with-django",
+                storageBucket: "sms-with-django.appspot.com",
+                messagingSenderId: "945324593139",
+                appId: "1:945324593139:web:03fa99a8854bbd38420c86",
+                measurementId: "G-2F2RXTL9GT"
+            };
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig)
+            const messaging = firebase.messaging();
+            function InitializeFireBaseMessaging() {
+                messaging
+                    .requestPermission()
+                    .then(function () {
+                        console.log("Notification Permission");
+                        return messaging.getToken();
+                    })
+                    .then(function (token) {
+                        console.log("Token : " + token);
+                        sendToServer(token);
+                    })
+                    .catch(function (reason) {
+                        console.log(reason)
+                    })
+            }
+            messaging.onMessage(function (payload) {
+                const notificationOption = {
+                    body: payload.notification.body,
+                    icon: payload.notification.icon,
+    
+                }
+                if (Notification.permission == 'granted') {
+                    var notification = new Notification(payload.notification.title, notificationOption);
+                    notification.onclick = function (event) {
+                        event.preventDefault();
+                        window.open(payload.notification.click_action, "_blank");
+                        notification.close();
+                    }
+                }
+                console.log(payload);
+            });
+            messaging.onTokenRefresh(function () {
+                messaging.getToken()
+                    .then(function (newToken) {
+                        console.log("New Token : " + newToken);
+                        sendToServer(newToken);
+  
+                    })
+                    .catch(function (reason) {
+                        console.log(reason)
+                    })
+            })
+    
+            function sendToServer(token){
+              $.ajax({
+                url: "{% url 'student_fcmtoken' %}",
+                type: 'POST',
+                data: {
+                    token: token,
+                }
+            }).done(function (response) {
+               
+      
+               
+            }).fail(function (response) {
+            })
+  
+            }
+            
+            InitializeFireBaseMessaging();
+        </script>
+
+
+{% endblock custom_js %}

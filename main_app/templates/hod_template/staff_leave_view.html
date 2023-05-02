@@ -1,0 +1,144 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+{% block page_title %}{{page_title}}{% endblock page_title %}
+
+{% block content %}
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">{{page_title}}</h3>
+                    </div>
+
+                    <div class="table card-body">
+                        <table class="table table-bordered table-hover">
+                            <tr>
+                                <th>№</th>
+                                <th>Қызметкер</th>
+                                <th>Сынып</th>
+                                <th>Хабарлама</th>
+                                <th>Шығу уақыты</th>
+                                <th>Ұсынылды</th>
+                                <th>Әрекеттер</th>
+
+                            </tr>
+                            {% for leave in  allLeave %}
+                              <tr>
+                                  <td>{{forloop.counter}}</td>
+                                  <td>{{leave.staff}}</td>
+                                  <td>{{leave.staff.course}}</td>
+                                  <td>{{leave.message}}</td>
+                                  <td>{{leave.date}}</td>
+                                  <td>{{leave.created_at}}</td>
+
+
+                                      {% if leave.status == 0 %}
+                                           <td> <button data-toggle = "modal" data-target = "#reply_modal" value="{{leave.id}}" class="btn btn-success reply_open_modal">Қайталау</button>
+{% elif leave.status == -1 %}
+<td><span  class='badge badge-danger'>Қабылданбаған</span></td>
+{% else %}
+<td><span  class='badge badge-success'>Бекітілген</span></td>
+
+                                            <td>{{feedback.updated_at}}</td>
+                                      {% endif %}
+
+                                  </td>
+
+                              </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    </div>
+                <!-- /.card -->
+
+            </div>
+        </div>
+    </div>
+</section>
+<div class = "modal fade" id = "reply_modal" tabindex = "-1" role = "dialog"
+   aria-labelledby = "myModalLabel" aria-hidden = "true">
+
+   <div class = "modal-dialog">
+      <div class = "modal-content">
+
+         <div class = "modal-header">
+            <button type = "button" class = "close" data-dismiss = "modal" aria-hidden = "true">
+                  &times;
+            </button>
+
+            <h4 class = "modal-title" id = "myModalLabel">
+
+            </h4>
+         </div>
+
+         <div class = "modal-body">
+             <input type="hidden"  id="id">
+           <p> Демалыс сұрауына <span id="reply_name"></span>жауап беру</p>
+           <select id="reply_leave_status" class="form-control">
+<option value="">-- Таңдау --</option>
+<option value="1">Бекіту</option>
+<option value="-1">Бас тарту</option>
+           </select>
+        </div>
+
+        <div class = "modal-footer">
+            <button type = "button" class = "btn btn-danger" data-dismiss = "modal">
+                Жабу
+            </button>
+
+            <button id="reply_btn" class="btn btn-success btn-block">Қарауға ұсыну
+</button>
+
+         </div>
+
+      </div><!-- /.modal-content -->
+   </div><!-- /.modal-dialog -->
+
+</div><!-- /.modal -->
+{% endblock content %}
+{% block custom_js %}
+  <script>
+      $(document).ready(function(){
+          $(".reply_open_modal").click(function(){
+              var id = $(this).val()
+              var name = $(this).parents("tr").children("td:eq(1)").text()
+              $("#reply_name").text(name)
+              $("#id").val(id)
+
+
+            })
+
+            $("#reply_btn").on("click", function(){
+                var id = $("#id").val()
+                var status = $("#reply_leave_status").val()
+                if (status == '1' || status == '-1'){
+
+    $.ajax({
+        url: "{% url 'view_staff_leave' %}",
+        type:'POST',
+        data:{
+              id:id,
+              status:status
+        }
+    }).done(function(response){
+        if (response == "True"){
+            alert("Қалған шолу сақталды!")
+            location.reload()
+        }else{
+            alert("Жауап жіберу мүмкін болмады")
+        }
+    }).fail(function(response){
+        alert("Қате пайда болды. ")
+    })
+}else{
+    alert("Жарамды жауапты таңдаңыз!")
+}
+
+          })
+      })
+  </script>
+{% endblock custom_js %}

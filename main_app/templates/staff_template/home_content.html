@@ -1,0 +1,502 @@
+{% extends 'main_app/base.html' %}
+{% load static %}
+{% block page_title %}{{page_title}}{% endblock page_title %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нақты уақыттағы орынды бақылау</title>
+
+    <!-- leaflet css  -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAmUfCtekuqEB8DJCBRK-XkcEa7OWpXZbU&libraries=places"></script>
+    <script>
+        // Map initialization
+        var map = L.map('map').setView([14.0860746, 100.608406], 6);
+
+        //osm layer
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> decitbustrack'
+        });
+        osm.addTo(map);
+
+        // Marker for current user's location
+        var userMarker, userCircle;
+
+        // Get current position
+        if (!navigator.geolocation) {
+            console.log("Your browser doesn't support geolocation feature!")
+        } else {
+            setInterval(() => {
+                navigator.geolocation.getCurrentPosition(getPosition)
+            }, 5000);
+        }
+
+        function getPosition(position) {
+            var lat = position.coords.latitude
+            var long = position.coords.longitude
+            var accuracy = position.coords.accuracy
+
+            if (userMarker) {
+                map.removeLayer(userMarker)
+            }
+
+            if (userCircle) {
+                map.removeLayer(userCircle)
+            }
+
+            userMarker = L.marker([lat, long])
+            userCircle = L.circle([lat, long], {
+                radius: accuracy
+            })
+
+            var featureGroup = L.featureGroup([userMarker, userCircle]).addTo(map)
+
+            map.fitBounds(featureGroup.getBounds())
+
+            console.log("Your coordinate is: Lat: " + lat + " Long: " + long + " Accuracy: " + accuracy)
+        }
+
+        // Add bus stops as markers
+        var busStops = [{
+                name: "Bus Stop 1",
+                lat: 43.43046729060574,
+                long: 76.91403548967112,
+                iconUrl: "red.png"
+            },
+            {
+                name: "Bus Stop 2",
+                lat: 14.1060746,
+                long: 100.608406,
+                iconUrl: "blue.png"
+            },
+            {
+                name: "Bus Stop 3",
+                lat: 14.1260746,
+                long: 100.608406,
+                iconUrl: "green.png"
+            }
+        ];
+
+        var markers = [];
+
+        busStops.forEach(function (busStop) {
+            var icon = L.icon({
+                iconUrl: busStop.iconUrl,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+                popupAnchor: [0, -16]
+            });
+
+            var marker = L.marker([busStop.lat, busStop.long], {
+                icon: icon
+            }).bindPopup(busStop.name).addTo(map);
+
+            markers.push(marker);
+        });
+
+        // Add click event listener for markers
+        markers.forEach(function(marker) {
+            marker.on('click', function() {
+                alert('Clicked on marker: ' + marker.getPopup().getContent());
+            });
+        });
+                // Add bus stops as markers
+                var busStops = [{
+                name: "Bus Stop 1",
+                lat: 14.0860746,
+                long: 100.608406,
+                iconUrl: "red.png"
+            },
+            {
+                name: "Bus Stop 2",
+                lat: 14.1060746,
+                long: 100.608406,
+                iconUrl: "blue.png"
+            },
+            {
+                name: "Bus Stop 3",
+                lat: 14.1260746,
+                long: 100.608406,
+                iconUrl: "green.png"
+            }
+        ];
+
+        var markers = [];
+
+        busStops.forEach(function(busStop) {
+            var icon = L.icon({
+                iconUrl: busStop.iconUrl,
+                iconSize: [32, 32],
+                iconAnchor: [16, 32]
+            });
+
+            var marker = L.marker([busStop.lat, busStop.long], {
+                icon: icon
+            }).bindPopup(busStop.name).addTo(map);
+
+            markers.push(marker);
+        });
+
+        // Add bus routes as polylines
+        var busRoutes = [{
+                name: "Route 1",
+                points: [
+                    [43.43046729060574, 76.91403548967112],
+                    [43.4291088258854, 76.91420250783695],
+                    [43.4282476404952, 76.91435282418618],
+                    [43.427410702108396, 76.9144196314525],
+                    [43.4264888435359, 76.91448643871884],
+                    [43.42568232226206, 76.91458549418685],
+                    [43.423725122994306, 76.91480548059336],
+                    [43.42262000974262, 76.9149888025988],
+                    [43.422634859482216, 76.9149617896154],
+                    [43.42070568785883, 76.91522500768517],
+                    [43.41874169324274, 76.91548822575493],
+                    [43.42070568785883, 76.91520107876973],
+                    [43.41879259036301, 76.91544079648962],
+                    [43.417524593920504, 76.91553058235883],
+                    [43.41609978531787, 76.91565972094699],
+                    [43.41421340839435, 76.91573180616246],
+                    [43.41167775409729, 76.9158306515906],
+                    [43.41080577993934, 76.91550027126576],
+                    [43.409379787849666, 76.914672853869],
+                    [43.4077675879681, 76.91706798615964],
+                    [43.40724523857643, 76.91754339229983],
+                    [43.405910443184965, 76.91835553500931],
+                    [43.40572158734507, 76.91836534354373],
+                    [43.40570973272833, 76.91891469255775],
+                    [43.40588886891219, 76.91939514634007],
+                    [43.4060798591159, 76.92020738516825],
+                    [43.40628006888788, 76.92093259841238],
+                    s[43.406625165763046, 76.92240840737075]
+                ],
+                color: "red"
+            },
+            {
+                name: "Route 2",
+                points: [
+                    [43.423725122994306, 76.91480548059336],
+                    [43.42262000974262, 76.9149888025988]
+                ],
+                color: "blue"
+            },
+            {
+                name: "Route 3",
+                points: [
+                    [43.41080577993934, 76.91550027126576],
+                    [43.409379787849666, 76.914672853869]
+                ],
+                color: "green"
+            }
+        ];
+
+        busRoutes.forEach(function(busRoute) {
+            var polyline = L.polyline(busRoute.points, {
+                color: busRoute.color
+            }).bindPopup(busRoute.name).addTo(map);
+        });
+    </script>
+</body>
+
+</html>
+
+
+
+
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{total_students}}</h3>
+
+                        <p>Барлық студенттер</p>
+                    </div>
+                    <div class="icon">
+                      <i class="nav-icon fas fa-user-graduate"></i>
+                    </div>
+                   
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>{{total_attendance}}</h3>
+
+                        <p>Жалпы келу/келмеу</p>
+                    </div>
+                    <div class="icon">
+                      <i class="nav-icon fas fa-calendar-alt"></i>
+                    </div>
+                   
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-maroon">
+                    <div class="inner">
+                        <h3>{{total_leave}}</h3>
+
+                        <p>Қолданылған демалыстардың жалпы саны</p>
+                    </div>
+                    <div class="icon">
+                      <i class="nav-icon fas fa-sign-out-alt"></i>
+                    </div>
+                   
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>{{total_subject}}</h3>
+
+                        <p>Барлық мектептер</p>
+                    </div>
+                    <div class="icon">
+                      <i class="nav-icon fas fa-book"></i>
+                    </div>
+                   
+                </div>
+            </div>
+            <!-- ./col -->
+        </div>
+        <!-- /.row -->
+        <!-- Main row -->
+        <div class="row">
+            <div class="col-md-6">
+                <!-- LINE CHART -->
+                <div class="card card-secondary">
+                  <div class="card-header">
+                    <h3 class="card-title">{{page_title}}</h3>
+    
+                    <div class="card-tools">
+                      <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
+                      </button>
+                      <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="chart">
+                      <canvas id="pieChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                  </div></div>
+                  <!-- /.card-body -->
+                </div>
+                <div class="col-md-6">
+                    <div class="card card-secondary">
+              <div class="card-header">
+                <h3 class="card-title">{{page_title}}</h3>
+
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="chart">
+                  <canvas id="barChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+                </div>
+            <!-- right col -->
+        </div>
+        <!-- /.row (main row) -->
+    </div><!-- /.container-fluid -->
+</section>
+{% endblock content %}
+
+{% block custom_js %}
+  <script>
+      $(document).ready(function(){
+        var donutData        = {
+            labels: ['Attendance', 'Leave'],
+            datasets: [
+              {
+                data:[{{total_attendance}}, {{total_leave}}],
+                backgroundColor : ['#00a65a', '#f39c12',],
+              }
+            ]
+          }
+        var pieChartCanvas = $('#pieChart').get(0).getContext('2d')
+        var pieData        = donutData;
+        var pieOptions     = {
+          maintainAspectRatio : false,
+          responsive : true,
+        }
+        //Create pie or douhnut chart
+        // You can switch between pie and douhnut using the method below.
+        var pieChart = new Chart(pieChartCanvas, {
+          type: 'pie',
+          data: pieData,
+          options: pieOptions      
+        });
+
+        var subject_list = {{ subject_list|safe|escape }};
+        var attendance_list = {{ attendance_list }};
+  
+            var barChartData = {
+      labels  : subject_list,
+      datasets: [
+      {
+        label               : 'Attendance Per Subject',
+        backgroundColor     : '#17A2B8',
+        borderColor         : 'rgba(60,141,188,0.8)',
+        pointRadius          : false,
+        pointColor          : '#3b8bba',
+        pointStrokeColor    : 'rgba(60,141,188,1)',
+        pointHighlightFill  : '#fff',
+        pointHighlightStroke: 'rgba(60,141,188,1)',
+        data                : attendance_list
+      }, 
+      
+      ]
+    }
+        var barChartCanvas = $('#barChart').get(0).getContext('2d')
+        var temp0 = barChartData.datasets[0]
+        //var temp1 = areaChartData.datasets[1]
+        barChartData.datasets[0] = temp0
+       // barChartData.datasets[1] = temp0
+    
+    var stackedBarChartOptions = {
+      responsive              : true,
+      maintainAspectRatio     : false,
+      scales: {
+        xAxes: [{
+          stacked: true,
+        }],
+        yAxes: [{
+          stacked: true
+        }]
+      }
+    }
+    
+        var barChart = new Chart(barChartCanvas, {
+          type: 'bar', 
+          data: barChartData,
+          options: stackedBarChartOptions
+        })
+      })
+
+    
+  </script>
+      <!-- The core Firebase JS SDK is always required and must be listed first -->
+      <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-app.js"></script>
+
+      <!-- TODO: Add SDKs for Firebase products that you want to use
+       https://firebase.google.com/docs/web/setup#available-libraries -->
+      <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-analytics.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/7.22.1/firebase-messaging.js"></script>
+  
+  
+      <script>
+          // Your web app's Firebase configuration
+          // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+          var firebaseConfig = {
+              apiKey: "AIzaSyBarDWWHTfTMSrtc5Lj3Cdw5dEvjAkFwtM",
+              authDomain: "sms-with-django.firebaseapp.com",
+              databaseURL: "https://sms-with-django.firebaseio.com",
+              projectId: "sms-with-django",
+              storageBucket: "sms-with-django.appspot.com",
+              messagingSenderId: "945324593139",
+              appId: "1:945324593139:web:03fa99a8854bbd38420c86",
+              measurementId: "G-2F2RXTL9GT"
+          };
+          // Initialize Firebase
+          firebase.initializeApp(firebaseConfig)
+          const messaging = firebase.messaging();
+          function InitializeFireBaseMessaging() {
+              messaging
+                  .requestPermission()
+                  .then(function () {
+                      console.log("Notification Permission");
+                      return messaging.getToken();
+                  })
+                  .then(function (token) {
+                      console.log("Token : " + token);
+                      sendToServer(token);
+                  })
+                  .catch(function (reason) {
+                      console.log(reason)
+                  })
+          }
+          messaging.onMessage(function (payload) {
+              const notificationOption = {
+                  body: payload.notification.body,
+                  icon: payload.notification.icon,
+  
+              }
+              if (Notification.permission == 'granted') {
+                  var notification = new Notification(payload.notification.title, notificationOption);
+                  notification.onclick = function (event) {
+                      event.preventDefault();
+                      window.open(payload.notification.click_action, "_blank");
+                      notification.close();
+                  }
+              }
+              console.log(payload);
+          });
+          messaging.onTokenRefresh(function () {
+              messaging.getToken()
+                  .then(function (newToken) {
+                      console.log("New Token : " + newToken);
+                      sendToServer(newToken);
+
+                  })
+                  .catch(function (reason) {
+                      console.log(reason)
+                  })
+          })
+  
+          function sendToServer(token){
+            $.ajax({
+              url: "{% url 'staff_fcmtoken' %}",
+              type: 'POST',
+              data: {
+                  token: token,
+              }
+          }).done(function (response) {
+   
+             
+          }).fail(function (response) {
+          })
+
+          }
+          
+          InitializeFireBaseMessaging();
+      </script>
+{% endblock custom_js %}
